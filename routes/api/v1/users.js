@@ -7,9 +7,7 @@ const random_key_generator = require('uuid/v4');
 var User = require('../../../models').User;
 
 
-/* GET users listing. */
 router.post('/', function(req, res) {
-  var email = req.body.username
 
   if(req.body.password === req.body.password_confirmation){
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
@@ -20,13 +18,17 @@ router.post('/', function(req, res) {
       })
       .then( user => {
         res.setHeader("Content-Type", "application/json");
-        res.status(201).send(JSON.stringify(user.api_key));
+        res.status(201).send(JSON.stringify({'api_key':  user.api_key}));
       })
       .catch( error => {
         res.setHeader("Content-Type", "application/json");
         res.status(500).send({error});
-      })
-    })
+      });
+    });
+
+  } else{
+    res.send("Passwords do not match")
   }
-  
+});
+
 module.exports = router;
