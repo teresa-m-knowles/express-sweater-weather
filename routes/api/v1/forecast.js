@@ -19,6 +19,9 @@ var locationData = function(res, address) {
 };
 
 
+var forecast = function(res, lat, lng){
+
+};
 
 router.get('/', function(req, res) {
   User.findOne({
