@@ -27,7 +27,7 @@ router.post('/', function(req, res) {
     });
 
   } else{
-    res.send("Passwords do not match")
+    res.status(500).send("Passwords do not match")
   }
 });
 
