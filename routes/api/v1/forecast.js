@@ -24,8 +24,8 @@ router.get('/', function(req, res) {
       console.log(url);
       fetch(url)
       .then( res => res.json())
-      .then( coordinates => {
-        res.send( { coordinates });
+      .then( address_data => {
+        res.send( { address_data });
       })
       .catch(error => {
         res.send({error});
