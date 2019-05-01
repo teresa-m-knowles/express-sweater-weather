@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt');
 const saltRounds = 10;
-const random_key_generator = require('uuid/v4');
+const randomKeyGenerator = require('uuid/v4');
 
 var User = require('../../../models').User;
 
@@ -14,7 +14,7 @@ router.post('/', function(req, res) {
       User.create({
         email: req.body.email,
         password: hash,
-        api_key: random_key_generator()
+        api_key: randomKeyGenerator()
       })
       .then( user => {
         res.setHeader("Content-Type", "application/json");
