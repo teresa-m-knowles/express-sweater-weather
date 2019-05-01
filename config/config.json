@@ -19,6 +19,9 @@
     "password": null,
     "database": "express_sweater_weather_production",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "dialectOptions": {
+      
+    }
   }
 }
