@@ -14,7 +14,6 @@ router.get('/', function(req, res) {
     }
   })
   .then( user => {
-    debugger;
     if(!user){
       res.sendStatus(401);
     } else {
