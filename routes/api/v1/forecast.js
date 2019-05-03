@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fetch = require('node-fetch');
 var pry = require('pryjs');
+const Forecast = require('../../../helpers/forecast');
 
 var geocodingUrl = 'https://maps.googleapis.com/maps/api/geocode/json?'
 
@@ -10,6 +11,7 @@ var User = require('../../../models').User;
 router.get('/', function(req, res) {
   let lat;
   let lng;
+  let address;
   let locationUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${req.query.location}&key=${process.env.GEOCODING_API_KEY}`;
   User.findOne({
     where: {
@@ -28,13 +30,15 @@ router.get('/', function(req, res) {
                 console.log(data);
                 lat = data.results[0].geometry.location.lat
                 lng = data.results[0].geometry.location.lng
+                address = data.results[0].formatted_address
                 let forecastUrl = `https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/${lat},${lng}?exclude=[minutely,alerts,flags]`;
                 fetch(forecastUrl)
                   .then(response => {
                     return response.json();
                   })
                   .then(forecastData => {
-                    res.status(200).send(forecastData);
+                    var forecast = new Forecast(address, forecastData)
+                    res.status(200).send(forecast);
                   })
                   .catch(error => {
                     res.send(error);
