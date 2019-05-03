@@ -8,20 +8,24 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true
       },
-      userId: {
+      UserId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Users',
           key: 'id'
         },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
         allowNull: false
       },
-      locationId: {
+      LocationId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Locations',
           key: 'id'
         },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
         allowNull: false
       },
       createdAt: Sequelize.DATE,
