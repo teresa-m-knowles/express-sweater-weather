@@ -42,6 +42,7 @@ router.post("/", function(req, res) {
               user.addLocation(location[0].dataValues.id)
                 .then(favorite => {
                   console.log(favorite)
+                  res.setHeader("Content-Type", "application/json");
                   res.status(200).send(JSON.stringify({message: `${req.body.location} has been added to your favorites.`}))
                 })
                 .catch(error => {
@@ -66,11 +67,12 @@ router.get("/", function(req, res) {
       if(!user){
         res.sendStatus(401)
       } else{
-        
+
 
       }
     })
     .catch(error => {
+      res.setHeader("Content-Type", "application/json");
       res.status(500).send({error});
     })
 
