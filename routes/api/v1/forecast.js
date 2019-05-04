@@ -4,8 +4,6 @@ var fetch = require('node-fetch');
 var pry = require('pryjs');
 const Forecast = require('../../../helpers/forecast');
 
-var geocodingUrl = 'https://maps.googleapis.com/maps/api/geocode/json?'
-
 var User = require('../../../models').User;
 
 router.get('/', function(req, res) {
