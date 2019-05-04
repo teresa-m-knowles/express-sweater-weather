@@ -54,5 +54,25 @@ router.post("/", function(req, res) {
     })
 
     .catch(error => res.send({error}));
-})
+});
+
+router.get("/", function(req, res) {
+  User.findOne({
+    where: {
+      api_key: req.body.api_key
+    }
+  })
+    .then( user => {
+      if(!user){
+        res.sendStatus(401)
+      } else{
+        
+
+      }
+    })
+    .catch(error => {
+      res.status(500).send({error});
+    })
+
+});
 module.exports = router;
