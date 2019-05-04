@@ -1,11 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var fetch = require('node-fetch');
-var fetch = require('node-fetch');
 
 var pry = require('pryjs');
 var User = require('../../../models').User;
 var Location = require('../../../models').Location;
+var Favorite = require('../../../models').Favorite;
+const Forecast = require('../../../helpers/forecast');
+const FavoriteFormat = require('../../../helpers/favorite_format');
+
 
 router.post("/", function(req, res) {
   let locationUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${req.body.location}&key=${process.env.GEOCODING_API_KEY}`;
@@ -61,19 +64,46 @@ router.get("/", function(req, res) {
   User.findOne({
     where: {
       api_key: req.body.api_key
-    }
+    },
+    include: [Location]
   })
     .then( user => {
       if(!user){
         res.sendStatus(401)
       } else{
+        let favorites = [];
+        user.getLocations()
+          .then(locations => {
+            var userLocations = locations;
+            for (i = 0; counter < locations.length; i++) {
+              let currentLocation = locations[counter];
+              let forecastUrl = `https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/${currentLocation.lat},${currentLocation.lng}?exclude=[minutely,alerts,flags]`;
+              fetch(forecastUrl)
+                .then(response => {
+                  return response.json()
+                })
+                .then(forecastData => {
+                  var favorite = new FavoriteFormat(currentLocation.cityState, forecastData)
+                  favorites.push(favorite);
+                  return favorites;
+                })
+                .then(favoriteLocations => {
+                  if (favorites.length == userLocations.length){
+                    res.setHeader("Content-Type", "application/json");
+                    res.status(200).send(JSON.stringify(favorites));
+                  }
+                })
+                .catch(error => console.log(error));
+            }
+          })
 
-
+          .catch(error => {
+            res.status(500).send({error});
+          })
       }
     })
     .catch(error => {
-      res.setHeader("Content-Type", "application/json");
-      res.status(500).send({error});
+      res.status(500).send(error);
     })
 
 });
