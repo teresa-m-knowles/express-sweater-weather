@@ -75,8 +75,8 @@ router.get("/", function(req, res) {
         user.getLocations()
           .then(locations => {
             var userLocations = locations;
-            for (i = 0; counter < locations.length; i++) {
-              let currentLocation = locations[counter];
+            for (i = 0; i < locations.length; i++) {
+              let currentLocation = locations[i];
               let forecastUrl = `https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/${currentLocation.lat},${currentLocation.lng}?exclude=[minutely,alerts,flags]`;
               fetch(forecastUrl)
                 .then(response => {
@@ -98,7 +98,8 @@ router.get("/", function(req, res) {
           })
 
           .catch(error => {
-            res.status(500).send({error});
+            console.log(error);
+            res.status(500).send(JSON.stringify(error));
           })
       }
     })
