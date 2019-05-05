@@ -61,6 +61,8 @@ router.post("/", function(req, res) {
 });
 
 router.get("/", function(req, res) {
+  let favorites = [];
+
   User.findOne({
     where: {
       api_key: req.body.api_key
@@ -68,10 +70,7 @@ router.get("/", function(req, res) {
     include: [Location]
   })
     .then( user => {
-      if(!user){
-        res.sendStatus(401)
-      } else{
-        let favorites = [];
+      !user ? res.sendStatus(401) :
         user.getLocations()
           .then(locations => {
             var userLocations = locations;
@@ -101,7 +100,7 @@ router.get("/", function(req, res) {
             console.log(error);
             res.status(500).send(JSON.stringify(error));
           })
-      }
+
     })
     .catch(error => {
       res.status(500).send(error);
