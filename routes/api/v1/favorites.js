@@ -60,51 +60,56 @@ router.post("/", function(req, res) {
     .catch(error => res.send({error}));
 });
 
-router.get("/", function(req, res) {
+router.get("/", function(req, res){
   let favorites = [];
-
+  let favoriteLocations;
   User.findOne({
     where: {
       api_key: req.body.api_key
     },
     include: [Location]
   })
-    .then( user => {
-      !user ? res.sendStatus(401) :
-        user.getLocations()
-          .then(locations => {
-            var userLocations = locations;
-            for (i = 0; i < locations.length; i++) {
-              let currentLocation = locations[i];
-              let forecastUrl = `https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/${currentLocation.lat},${currentLocation.lng}?exclude=[minutely,alerts,flags]`;
-              fetch(forecastUrl)
-                .then(response => {
-                  return response.json()
-                })
-                .then(forecastData => {
-                  var favorite = new FavoriteFormat(currentLocation.cityState, forecastData)
-                  favorites.push(favorite);
-                  return favorites;
-                })
-                .then(favoriteLocations => {
-                  if (favorites.length == userLocations.length){
-                    res.setHeader("Content-Type", "application/json");
-                    res.status(200).send(JSON.stringify(favorites));
-                  }
-                })
-                .catch(error => console.log(error));
-            }
-          })
+    .then(user => {
+      !user ? res.status(401).send(JSON.stringify("Invalid API key")) :
+      user.getLocations()
+        .then(locations => {
+          favorites = locations.map(location => {
+            let forecastUrl = `https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/${location.lat},${location.lng}?exclude=[minutely,alerts,flags]`;
+            return favoriteLocations = fetch(forecastUrl)
+              .then(response => {
+                return response.json()
+              })
+              .then(forecastData => {
+                var favorite = new FavoriteFormat(location.cityState, forecastData);
+                return favorite;
+              })
+              .catch(error => {
+                console.log(error);
+                res.status(500).send(JSON.stringify("Unable to get locations forecast"))
+              })
 
+
+          })
+          Promise.all(favorites)
+          .then(response => {
+            res.setHeader("Content-Type", "application/json");
+            res.status(200).send(JSON.stringify(response));
+          })
           .catch(error => {
-            console.log(error);
-            res.status(500).send(JSON.stringify(error));
+            console.log(error)
+            res.status(500).send(JSON.stringify("Unable to get JSON object"))
           })
-
+          })
+        .catch(error => {
+          console.log(error)
+          res.status(500).send(JSON.stringify("Unable to get user's favorite locations"))
+        })
     })
     .catch(error => {
-      res.status(500).send(error);
+      res.status(500).send(JSON.stringify("Unable to connect to the database to find user"))
     })
+})
 
-});
+
+
 module.exports = router;
