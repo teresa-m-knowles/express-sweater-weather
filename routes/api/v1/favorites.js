@@ -108,7 +108,82 @@ router.get("/", function(req, res){
     .catch(error => {
       res.status(500).send(JSON.stringify("Unable to connect to the database to find user"))
     })
-})
+});
+
+router.delete("/", function(req, res) {
+  let locationUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${req.body.location}&key=${process.env.GEOCODING_API_KEY}`;
+
+  User.findOne({
+    where: {
+      api_key: req.body.api_key
+    },
+    include: [Location]
+  })
+    .then(user => {
+      if(!user){
+        res.status(401).send(JSON.stringify("Invalid API key"))
+      } else{
+        fetch(locationUrl)
+          .then(response => {
+            return response.json()
+          })
+          .then(data => {
+            let lat = data.results[0].geometry.location.lat
+            let lng = data.results[0].geometry.location.lng
+            let address = data.results[0].formatted_address
+
+            Location.findOrCreate({
+              where: {
+                cityState: address
+              },
+              defaults: {
+                lat: lat,
+                lng: lng
+              }
+            })
+              .then(location => {
+                console.log(location);
+                console.log(user.id);
+                console.log(location.id);
+                Favorite.destroy({
+                  where: {
+                    UserId: user.id,
+                    LocationId: location[0].dataValues.id
+                  }
+                })
+                  .then(removedLocation => {
+                    if(removedLocation == 0) {
+                      res.status(400).send(JSON.stringify(`${req.body.location} was not in your favorites`))
+                    } else{
+                      console.log(removedLocation);
+                      res.setHeader("Content-Type", "application/json");
+                      res.sendStatus(204);
+                    }
+
+                  })
+                  .catch(error => {
+                    console.log(error);
+                    res.status(500).send(JSON.stringify("UUnable to connect to database to remove favorite location"))
+                  })
+
+              })
+              .catch(error => {
+                console.log(error);
+                res.status(500).send(JSON.stringify("Unable to connect to database to find user favorite locations"))
+              })
+
+          })
+          .catch(error => {
+            console.log(error);
+            res.status(500).send(JSON.stringify(`Unable to find ${req.body.location}'s latitude and longitude`))
+          })
+
+      }
+    })
+    .catch(error => {
+      res.status(500).send(JSON.stringify("Unable to connect to database to find user"))
+    })
+});
 
 
 
